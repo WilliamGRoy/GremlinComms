@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExRam.Gremlinq.Providers.GremlinServer.AspNet" Version="13.0.0" />
+    <PackageReference Include="ExRam.Gremlinq.Support.NewtonsoftJson.AspNet" Version="13.0.0" />
+  </ItemGroup>
+
+</Project>
