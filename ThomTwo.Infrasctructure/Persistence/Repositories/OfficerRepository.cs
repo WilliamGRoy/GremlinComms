@@ -1,27 +1,27 @@
-﻿using Gremlin.Net.Driver;
-using ThomTwo.Domain.Entities;
+﻿using ThomTwo.Domain.Entities;
 using ThomTwo.Domain.Repository;
 using Gremlin.Net.Structure;
 using System;
+using ThomTwo.Infrasctructure.Gremlin;
 using Gremlin.Net.Process.Traversal;
 
 namespace ThomTwo.Infrasctructure.Persistence.Repositories;
 
 public class OfficerRepository : IOfficerRepository
 {
-    private readonly GremlinClient _gremlinClient;
+    private readonly IGremlinQueryExecutor _gremlinExecutor;
     private const string PersonLabel = "person"; // Define the vertex label
 
-    public OfficerRepository(GremlinClient gremlinClient)
+    public OfficerRepository(IGremlinQueryExecutor gremlinExecutor)
     {
-        _gremlinClient = gremlinClient ?? throw new ArgumentNullException(nameof(gremlinClient));
+        _gremlinExecutor = gremlinExecutor ?? throw new ArgumentNullException(nameof(gremlinExecutor));
     }
 
     public async Task<Officer> GetByIdAsync(string id)
     {
-        var query = "g.V(id).valueMap(true)";
-        var bindings = new Dictionary<string, object> { { "id", id } };
-        var resultSet = await _gremlinClient.SubmitAsync<Dictionary<object, object>>(query, bindings);
+        var gremlinQuery = new GremlinQuery("g.V(id).valueMap(true)",
+            new Dictionary<string, object> { { "id", id } });
+        var resultSet = await _gremlinExecutor.ExecuteAsync<Dictionary<object, object>>(gremlinQuery);
 
         var properties = resultSet.FirstOrDefault();
         return properties == null ? null : MapValueMapToOfficer(properties);
@@ -29,9 +29,9 @@ public class OfficerRepository : IOfficerRepository
 
     public async Task<IEnumerable<Officer>> GetAllAsync()
     {
-        var query = "g.V().hasLabel(label).valueMap(true)";
-        var bindings = new Dictionary<string, object> { { "label", PersonLabel } };
-        var resultSet = await _gremlinClient.SubmitAsync<Dictionary<object, object>>(query, bindings);
+        var gremlinQuery = new GremlinQuery("g.V().hasLabel(label).valueMap(true)",
+            new Dictionary<string, object> { { "label", PersonLabel } });
+        var resultSet = await _gremlinExecutor.ExecuteAsync<Dictionary<object, object>>(gremlinQuery);
 
         return resultSet.Select(MapValueMapToOfficer).ToList();
     }
@@ -60,39 +60,41 @@ public class OfficerRepository : IOfficerRepository
 
     public async Task AddAsync(Officer person)
     {
-        var query = "g.addV(label)" +
+        var queryText = "g.addV(label)" +
                     ".property(T.id, p_id)" +
+                    ".property('pk', p_pk)" + // Add the partition key property
                     ".property('Name', p_name)" +
                     ".property('Age', p_age)";
 
-        var bindings = new Dictionary<string, object>
+        var parameters = new Dictionary<string, object>
         {
             { "label", PersonLabel },
+            { "p_pk", PersonLabel }, // Use the label as the partition key value
             { "p_id", person.Id },
             { "p_name", person.Name },
             { "p_age", person.Age }
         };
-
-        await _gremlinClient.SubmitAsync(query, bindings);
+        var gremlinQuery = new GremlinQuery(queryText, parameters);
+        await _gremlinExecutor.ExecuteAsync<dynamic>(gremlinQuery);
     }
 
     public async Task UpdateAsync(Officer person)
     {
-        var query = "g.V(id).property('Name', p_name).property('Age', p_age)";
-        var bindings = new Dictionary<string, object>
+        var queryText = "g.V(id).property('Name', p_name).property('Age', p_age)";
+        var parameters = new Dictionary<string, object>
         {
             { "id", person.Id },
             { "p_name", person.Name },
             { "p_age", person.Age }
         };
-
-        await _gremlinClient.SubmitAsync(query, bindings);
+        var gremlinQuery = new GremlinQuery(queryText, parameters);
+        await _gremlinExecutor.ExecuteAsync<dynamic>(gremlinQuery);
     }
 
     public async Task DeleteAsync(string id)
     {
-        var query = "g.V(id).drop()";
-        var bindings = new Dictionary<string, object> { { "id", id } };
-        await _gremlinClient.SubmitAsync(query, bindings);
+        var gremlinQuery = new GremlinQuery("g.V(id).drop()",
+            new Dictionary<string, object> { { "id", id } });
+        await _gremlinExecutor.ExecuteAsync<dynamic>(gremlinQuery);
     }
 }

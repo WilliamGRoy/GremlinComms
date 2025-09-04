@@ -1,5 +1,6 @@
 using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphSON;
+using ThomTwo.Infrasctructure.Gremlin;
 using ThomTwo.Infrasctructure.Persistence.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure();
+
+builder.Services.AddSingleton<IGremlinQueryExecutor, GremlinQueryExecutor>();
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(ThomTwo.Application.Features.Officers.Commands.CreateOfficerCommand).Assembly));
