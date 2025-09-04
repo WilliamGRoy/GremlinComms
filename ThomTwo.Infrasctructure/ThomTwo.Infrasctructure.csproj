@@ -6,4 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ThomTwo.Application\ThomTwo.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SeedData\" />
+    <Folder Include="Services\" />
+    <Folder Include="Providers\" />
+    <Folder Include="Persistence\" />
+  </ItemGroup>
+
 </Project>

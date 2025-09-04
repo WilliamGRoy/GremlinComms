@@ -8,14 +8,24 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThomTwo.Server", "ThomTwo.Server\ThomTwo.Server.csproj", "{32DB5B00-CC77-45A2-8B20-B68C6C482BAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThomTwo.Application", "ThomTwo.Application\ThomTwo.Application.csproj", "{DAD8FA9F-4EFE-448D-B768-38D4E5289179}"
+	ProjectSection(ProjectDependencies) = postProject
+		{61E3E144-46BE-4EFE-B2B5-BE878E55B89C} = {61E3E144-46BE-4EFE-B2B5-BE878E55B89C}
+		{C9941103-168D-4A05-8C5B-779C7492F537} = {C9941103-168D-4A05-8C5B-779C7492F537}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThomTwo.Domain", "ThomTwo.Domain\ThomTwo.Domain.csproj", "{C9941103-168D-4A05-8C5B-779C7492F537}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThomTwo.Infrasctructure", "ThomTwo.Infrasctructure\ThomTwo.Infrasctructure.csproj", "{E91A6EA8-AAD2-4FA9-91FA-D907A7CB4F4D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DAD8FA9F-4EFE-448D-B768-38D4E5289179} = {DAD8FA9F-4EFE-448D-B768-38D4E5289179}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThomTwo.Shared", "ThomTwo.Shared\ThomTwo.Shared.csproj", "{61E3E144-46BE-4EFE-B2B5-BE878E55B89C}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "thomtwo.client", "ThomTwo.Client\thomtwo.client.esproj", "{9535FF5C-1C02-5CFF-22C4-04BF36C58582}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ThomTwo.Client", "ThomTwo.Client\ThomTwo.Client.esproj", "{9535FF5C-1C02-5CFF-22C4-04BF36C58582}"
+	ProjectSection(ProjectDependencies) = postProject
+		{61E3E144-46BE-4EFE-B2B5-BE878E55B89C} = {61E3E144-46BE-4EFE-B2B5-BE878E55B89C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

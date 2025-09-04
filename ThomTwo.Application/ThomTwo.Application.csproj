@@ -6,4 +6,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ThomTwo.Domain\ThomTwo.Domain.csproj" />
+    <ProjectReference Include="..\ThomTwo.Shared\ThomTwo.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="Services\" />
+    <Folder Include="Providers\" />
+  </ItemGroup>
+
 </Project>
