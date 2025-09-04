@@ -1,5 +1,6 @@
 using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphSON;
+using ThomTwo.Infrasctructure.Persistence.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,6 @@ var gremlinUsername = "/dbs/db1/colls/coll1";
 var gremlinPassword = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 var gremlinWsUri = new Uri($"ws://{gremlinHostname}:{gremlinPort}");
 
-// Register a Gremlin.Net GremlinClient and let Gremlinq use the GremlinServer provider
 builder.Services.AddSingleton(_ =>
 {
     var server = new GremlinServer(
@@ -17,7 +17,7 @@ builder.Services.AddSingleton(_ =>
         port: gremlinPort,
         username: gremlinUsername,
         password: gremlinPassword,
-        enableSsl: false // emulator typically runs without SSL
+        enableSsl: false 
     );
 
     return new GremlinClient(
@@ -28,23 +28,14 @@ builder.Services.AddSingleton(_ =>
     );
 });
 
-//builder.Services
-//    .AddGremlinq(setup => setup
-//        // Tell Gremlinq to use the GremlinServer provider and resolve the GremlinClient from DI.
-//        // The provider will obtain the GremlinClient we registered above.
-//        .UseGremlinServer<Vertex, Edge>()
-//        .UseNewtonsoftJson());
-
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddInfrastructure();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

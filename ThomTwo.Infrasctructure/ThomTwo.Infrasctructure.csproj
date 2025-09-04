@@ -14,7 +14,12 @@
     <Folder Include="SeedData\" />
     <Folder Include="Services\" />
     <Folder Include="Providers\" />
-    <Folder Include="Persistence\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Gremlin.Net" Version="3.4.13" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

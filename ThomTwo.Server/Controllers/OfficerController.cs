@@ -1,29 +1,38 @@
 using Gremlin.Net.Driver;
 using Microsoft.AspNetCore.Mvc;
+using ThomTwo.Domain.Entities;
+using ThomTwo.Domain.Repository;
 
 namespace ThomTwo.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class OfficerController : ControllerBase
     {
         private readonly GremlinClient _client;
+        private readonly IOfficerRepository _personRepository;
+
+        public OfficerController(IOfficerRepository personRepository, GremlinClient gremlinClient)
+        {
+            _personRepository = personRepository;
+               _client = gremlinClient;
+        }
 
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        //private readonly ILogger<OfficerController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, 
-                                         GremlinClient gremlinClient)
-        {
-            _logger = logger;
-            _client = gremlinClient;
-        }
+        //public OfficerController(ILogger<OfficerController> logger, 
+        //                                 GremlinClient gremlinClient)
+        //{
+        //    _logger = logger;
+        //    _client = gremlinClient;
+        //}
 
-        [HttpGet(Name = "GetWeatherForecast")]
+        [HttpGet()]
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
             await _client.SubmitAsync(
@@ -47,6 +56,24 @@ namespace ThomTwo.Server.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id)
+        {
+            var person = await _personRepository.GetByIdAsync(id);
+            if (person == null)
+            {
+                return NotFound();
+            }
+            return Ok(person);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post(Officer person)
+        {
+            await _personRepository.AddAsync(person);
+            return CreatedAtAction(nameof(Get), new { id = person.Id }, person);
         }
     }
 }
