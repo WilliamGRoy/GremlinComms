@@ -1,7 +1,9 @@
 ﻿using Gremlin.Net.Driver;
-using Newtonsoft.Json.Linq;
 using ThomTwo.Domain.Entities;
 using ThomTwo.Domain.Repository;
+using Gremlin.Net.Structure;
+using System;
+using Gremlin.Net.Process.Traversal;
 
 namespace ThomTwo.Infrasctructure.Persistence.Repositories;
 
@@ -17,78 +19,80 @@ public class OfficerRepository : IOfficerRepository
 
     public async Task<Officer> GetByIdAsync(string id)
     {
-        var query = $"g.V('{id}')";
-        var resultSet = await _gremlinClient.SubmitAsync<dynamic>(query);
+        var query = "g.V(id).valueMap(true)";
+        var bindings = new Dictionary<string, object> { { "id", id } };
+        var resultSet = await _gremlinClient.SubmitAsync<Dictionary<object, object>>(query, bindings);
 
-        foreach (var result in resultSet)
-        {
-            JObject jsonObject = JObject.FromObject(result);
-            Officer entity = jsonObject.ToObject<Officer>();
-            return entity;
-        }
-
-        return null;
+        var properties = resultSet.FirstOrDefault();
+        return properties == null ? null : MapValueMapToOfficer(properties);
     }
-
 
     public async Task<IEnumerable<Officer>> GetAllAsync()
     {
-        var query = $"g.V().hasLabel('{PersonLabel}')";
-        var results = await _gremlinClient.SubmitAsync<dynamic>(query);
-        List<Officer> entities = new List<Officer>();
+        var query = "g.V().hasLabel(label).valueMap(true)";
+        var bindings = new Dictionary<string, object> { { "label", PersonLabel } };
+        var resultSet = await _gremlinClient.SubmitAsync<Dictionary<object, object>>(query, bindings);
 
-        foreach (var result in results)
+        return resultSet.Select(MapValueMapToOfficer).ToList();
+    }
+
+    private static Officer MapValueMapToOfficer(IDictionary<object, object> properties)
+    {
+        var officer = new Officer();
+
+        if (properties.TryGetValue(T.Id, out var idValue))
         {
-            JObject jsonObject = JObject.FromObject(result);
-            Officer entity = jsonObject.ToObject<Officer>();
-            entities.Add(entity);
+            officer.Id = idValue.ToString();
         }
 
-        return entities;
+        if (properties.TryGetValue("Name", out var nameValue) && nameValue is ICollection<object> nameList && nameList.Any())
+        {
+            officer.Name = nameList.First().ToString();
+        }
+
+        if (properties.TryGetValue("Age", out var ageValue) && ageValue is ICollection<object> ageList && ageList.Any())
+        {
+            officer.Age = Convert.ToInt32(ageList.First());
+        }
+
+        return officer;
     }
 
     public async Task AddAsync(Officer person)
     {
-        var properties = person.GetType().GetProperties();
-        string query = $"g.addV('{PersonLabel}')";
+        var query = "g.addV(label)" +
+                    ".property(T.id, p_id)" +
+                    ".property('Name', p_name)" +
+                    ".property('Age', p_age)";
 
-        foreach (var property in properties)
+        var bindings = new Dictionary<string, object>
         {
-            if (property.Name == "Id") continue; // Skip Id as it might be generated
-            var value = property.GetValue(person);
-            if (value != null)
-            {
-                query += $".property('{property.Name}', '{value}')";
-            }
-        }
-        query += $".property('id', '{person.Id}')"; // Add id property
+            { "label", PersonLabel },
+            { "p_id", person.Id },
+            { "p_name", person.Name },
+            { "p_age", person.Age }
+        };
 
-        await _gremlinClient.SubmitAsync(query);
+        await _gremlinClient.SubmitAsync(query, bindings);
     }
 
     public async Task UpdateAsync(Officer person)
     {
-        var properties = person.GetType().GetProperties();
-        string id = person.Id;
-
-        string query = $"g.V('{id}')";
-
-        foreach (var property in properties)
+        var query = "g.V(id).property('Name', p_name).property('Age', p_age)";
+        var bindings = new Dictionary<string, object>
         {
-            if (property.Name == "Id") continue;
-            var value = property.GetValue(person);
-            if (value != null)
-            {
-                query += $".property('{property.Name}', '{value}')";
-            }
-        }
+            { "id", person.Id },
+            { "p_name", person.Name },
+            { "p_age", person.Age }
+        };
 
-        await _gremlinClient.SubmitAsync(query);
+        await _gremlinClient.SubmitAsync(query, bindings);
     }
 
     public async Task DeleteAsync(string id)
     {
-        var query = $"g.V('{id}').drop()";
-        await _gremlinClient.SubmitAsync(query);
+        var query = "g.V(id).drop()";
+        var bindings = new Dictionary<string, object> { { "id", id } };
+        await _gremlinClient.SubmitAsync(query, bindings);
     }
 }

@@ -34,6 +34,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure();
 
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(ThomTwo.Application.Features.Officers.Commands.CreateOfficerCommand).Assembly));
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

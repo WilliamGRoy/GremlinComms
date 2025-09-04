@@ -1,7 +1,9 @@
 using Gremlin.Net.Driver;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ThomTwo.Application.Features.Officers.Commands;
+using ThomTwo.Application.Features.Officers.Queries;
 using ThomTwo.Domain.Entities;
-using ThomTwo.Domain.Repository;
 
 namespace ThomTwo.Server.Controllers
 {
@@ -10,27 +12,18 @@ namespace ThomTwo.Server.Controllers
     public class OfficerController : ControllerBase
     {
         private readonly GremlinClient _client;
-        private readonly IOfficerRepository _personRepository;
+        private readonly IMediator _mediator;
 
-        public OfficerController(IOfficerRepository personRepository, GremlinClient gremlinClient)
+        public OfficerController(IMediator mediator, GremlinClient gremlinClient)
         {
-            _personRepository = personRepository;
-               _client = gremlinClient;
+            _mediator = mediator;
+            _client = gremlinClient;
         }
 
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
-
-        //private readonly ILogger<OfficerController> _logger;
-
-        //public OfficerController(ILogger<OfficerController> logger, 
-        //                                 GremlinClient gremlinClient)
-        //{
-        //    _logger = logger;
-        //    _client = gremlinClient;
-        //}
 
         [HttpGet()]
         public async Task<IEnumerable<WeatherForecast>> Get()
@@ -44,7 +37,7 @@ namespace ThomTwo.Server.Controllers
                 bindings: new Dictionary<string, object>
                 {
                     { "prop_id", "68719518373" },
-                    { "prop_name", "Kiama classic surfboard44444" },
+                    { "prop_name", "Kiama classic surfboard5555 "},
                     { "pk", "Kiama44444" }
                 }
                );
@@ -61,7 +54,7 @@ namespace ThomTwo.Server.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var person = await _personRepository.GetByIdAsync(id);
+            var person = await _mediator.Send(new GetOfficerByIdQuery { Id = id });
             if (person == null)
             {
                 return NotFound();
@@ -72,8 +65,14 @@ namespace ThomTwo.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(Officer person)
         {
-            await _personRepository.AddAsync(person);
-            return CreatedAtAction(nameof(Get), new { id = person.Id }, person);
+            var command = new CreateOfficerCommand
+            {
+                Id = person.Id,
+                Name = person.Name,
+                Age = person.Age
+            };
+            var createdOfficer = await _mediator.Send(command);
+            return CreatedAtAction(nameof(Get), new { id = createdOfficer.Id }, createdOfficer);
         }
     }
 }
